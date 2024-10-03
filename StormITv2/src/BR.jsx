@@ -102,6 +102,9 @@ const Canvas = () => {
   };
 
   const startDrawing = ({ nativeEvent }) => {
+    // Only start drawing if the left mouse button is clicked
+    if (nativeEvent.button !== 0) return;
+
     const { offsetX, offsetY } = nativeEvent;
     contextRef.current.beginPath();
     contextRef.current.moveTo(offsetX, offsetY);
@@ -114,10 +117,18 @@ const Canvas = () => {
   };
 
   const draw = ({ nativeEvent }) => {
+    // Only draw when isDrawing is true and left-click is held down
     if (!isDrawing || isPreviewMode) return;
+
     const { offsetX, offsetY } = nativeEvent;
+
+    // Draw a smooth line using quadratic curve
     contextRef.current.lineTo(offsetX, offsetY);
     contextRef.current.stroke();
+
+    // Move the drawing point slightly backward to create a smoother transition
+    contextRef.current.beginPath();
+    contextRef.current.moveTo(offsetX, offsetY);
   };
 
   const clearCanvas = () => {
@@ -155,6 +166,11 @@ const Canvas = () => {
   const handleDevelopIdea = () => {
     setIsPreviewMode(false);
     setIsAdvancedDrawing(true);
+    
+    // Apply the correct pencil color and size when entering advanced drawing mode
+    contextRef.current.strokeStyle = pencilColor;
+    contextRef.current.lineWidth = pencilSize;
+    contextRef.current.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
   };
 
   const handleColorChange = (color) => {
@@ -250,7 +266,7 @@ const Canvas = () => {
             style={{
               position: 'absolute',
               top: '10px',
-              right: '10px', // Moved to the right
+              right: '20px',
               padding: '10px',
               backgroundColor: '#333',
               color: 'white',
@@ -262,25 +278,61 @@ const Canvas = () => {
             Save as JPG
           </button>
 
-          <div>
-            <label>Color: </label>
-            <input
-              type="color"
-              value={pencilColor}
-              onChange={(e) => handleColorChange(e.target.value)}
-            />
-            <button onClick={handleErase}>Eraser</button>
+          {/* Tools Section */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '30px',
+              padding: '10px 20px',
+              backgroundColor: '#222',
+              color: 'white',
+              borderRadius: '5px',
+              position: 'absolute',
+              top: '10px',
+              left: '20px',
+              margin: '470px',
+            }}
+          >
+            {/* Color Picker */}
+            <div>
+              <input
+                type="color"
+                value={pencilColor}
+                onChange={(e) => handleColorChange(e.target.value)}
+                style={{ cursor: 'pointer' }}
+              />
+            </div>
+
+            {/* Eraser Button */}
+            <button
+              onClick={handleErase}
+              style={{
+                padding: '5px 10px',
+                backgroundColor: isErasing ? '#555' : '#333',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+              }}
+            >
+              Eraser
+            </button>
+
+            {/* Pencil Size Slider */}
+            <div>
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={pencilSize}
+                onChange={(e) => handlePencilSizeChange(e.target.value)}
+                style={{ cursor: 'pointer' }}
+              />
+            </div>
           </div>
-          <div>
-            <label>Size: </label>
-            <input
-              type="range"
-              min="1"
-              max="50"
-              value={pencilSize}
-              onChange={(e) => handlePencilSizeChange(e.target.value)}
-            />
-          </div>
+
+          {/* Canvas for Drawing */}
           <canvas
             onMouseDown={startDrawing}
             onMouseUp={finishDrawing}

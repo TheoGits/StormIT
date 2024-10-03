@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './App.css';
+import BM from './BM';
 import BR from './BR';
 import Forside from './Forside';
 import AnimatedShapes from './AnimatedShapes';
@@ -16,6 +17,8 @@ function App() {
     <>
       {!showBR ? <Forside onButtonClick={handleButtonClick} /> : <BR />}
       {!showBR && <AnimatedShapes />}
+      <BM></BM>
+
     </>
   );
 }
